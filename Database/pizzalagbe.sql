@@ -1,4 +1,6 @@
-﻿DROP TABLE IF EXISTS admins;
+﻿-- create database pizzalagbe;
+
+DROP TABLE IF EXISTS admins;
 DROP TABLE IF EXISTS orderpizzatopping;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS pizzas;

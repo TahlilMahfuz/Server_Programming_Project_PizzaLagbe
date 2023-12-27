@@ -289,6 +289,7 @@ END $$;
 /*************************************************************************/
 -- Review orders
 drop procedure review_order(Rate double precision, usercomment varchar(20), order_id int);
+
 CREATE OR REPLACE PROCEDURE review_order(
     Rate double precision,
     usercomment varchar(20),
@@ -313,10 +314,14 @@ END $$;
 /************************************************************************/
 
 
-
-
-
-
+select *
+        from orders natural join orderpizzatopping
+             natural join customers
+             natural join ordertype
+             natural join branches
+             natural join admins,pizzas,toppings
+         where status=1 and branchid=1
+         and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid
 
 
 
