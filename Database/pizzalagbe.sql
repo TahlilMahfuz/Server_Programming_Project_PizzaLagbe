@@ -111,4 +111,3 @@ CREATE TABLE orderpizzatopping (
     CONSTRAINT fk_orderpizzatopping_toppingid FOREIGN KEY (toppingid)
         REFERENCES toppings (toppingid)
 );
-

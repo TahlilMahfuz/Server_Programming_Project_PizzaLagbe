@@ -60,9 +60,9 @@ const getaddBranch = (req, res) => {
     res.render('admin/addbranch');
 };
 
-const getReviews = (req, res) => {
+const getReviews = async (req, res) => {
     console.log(req.session.admin);
-    pool.query(
+    await pool.query(
         `select *
         from orders natural join orderpizzatopping
             natural join customers
@@ -82,7 +82,7 @@ const getReviews = (req, res) => {
     );
 };
 
-const getshowOrders = (req, res) => {
+const getshowOrders =(req, res) => {
     console.log(req.session.admin);
     pool.query(
         `select *
@@ -92,13 +92,13 @@ const getshowOrders = (req, res) => {
             natural join branches
             natural join admins,pizzas,toppings
         where status=1 and branchid=$1
-        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`,[req.session.admin.branchid],
-        (err,results)=>{
-            if(err){
+        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`, [req.session.admin.branchid],
+        (err, results) => {
+            if (err) {
                 throw err;
             }
             const resultsArray = Array.from(results.rows);
-            res.render('admin/showorders',{results: resultsArray});
+            res.render('admin/showorders', { results: resultsArray });
         }
     );
 };  
@@ -165,7 +165,7 @@ const markDelivered = (req, res) => {
   };
   
   const deleteOrder = (req, res) => {
-    let {orderid}=req.body;
+    let { orderid } = req.body;
     console.log("The orderid name is : "+orderid);
     pool.query(
         `update orders set status=5 where orderid=$1`,[orderid],

@@ -12,6 +12,17 @@ const initializePassport=require('./passportConfig');
 const sendMail = require("./middlewares/sendmail");
 const cookieParser = require("cookie-parser");
 
+//add sequilize
+const sequelize=require("./sequelizeConfig");
+sequelize.authenticate().then(() => {
+    console.log('Database Connected');
+}).catch(err => {
+    console.error('Unable to connect to the database:', err);
+}).finally(() => {
+    // Close the Sequelize connection when done (if necessary)
+    // await sequelize.close();
+});
+
 initializePassport(passport);
 
 require('dotenv').config()
@@ -46,20 +57,14 @@ app.use("/", adminRouter);
 const deliverymanRouter = require("./routes/deliveryman.routes");
 app.use("/", deliverymanRouter);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+const Branch= require("./datamodels/branches.model");
+const Admin= require("./datamodels/admins.model");
+const OrderType = require("./datamodels/ordertypes.model");
+const Customers = require("./datamodels/customers.model");
+const deliverman = require("./datamodels/deliveryman.model");
+const Orders = require("./datamodels/orders.model");
+const pizzas = require("./datamodels/pizzas.model");
+const OrderPizzaTopping = require("./datamodels/orderpizzatoppings.model");
 
 
 
