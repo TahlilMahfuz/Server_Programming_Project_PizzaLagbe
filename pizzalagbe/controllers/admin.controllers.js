@@ -103,9 +103,6 @@ const getshowOrders =(req, res) => {
     );
 };  
 
-
-
-
 const markDelivered = (req, res) => {
     let {orderid}=req.body;
     console.log("The orderid name is : "+orderid);
@@ -813,6 +810,84 @@ const deleteOrderType = async(req,res)=>{
     );
 }
 
+// const deleteCustomer = async(req,res)=>{
+//     let {customerid}=req.params;
+//     console.log(customerid);  
+//     pool.query(
+//         `select * from customers where customerid=$1`,[customerid],
+//         (err,results)=>{
+//             if(err){
+//                 throw err;
+//             }
+//             else if(results.rows.length==0){
+//                 let error=[];
+//                 error.push({message:"Customer does not exist"});
+//                 res.json({error});
+//             }
+//             else if(results.rows.length>0){
+//                 pool.query(
+//                     `delete from orderpizzatopping natural join orders 
+//                     natural join customers where customerid=$1`,[customerid],
+//                     (err,results)=>{
+//                         if(err){
+//                             throw err;
+//                         }
+//                         else{
+//                             let no_err=[];
+//                             no_err.push({message:"Customer has been deleted"});
+//                             res.json({no_err});
+//                         }
+//                     }
+//                 );
+                
+//             }
+//         }
+//     );
+// }
+
+const deleteOrderByid = async(req,res)=>{
+    let {orderid}=req.params;
+    console.log(orderid);  
+    pool.query(
+        `select * from orders where orderid=$1`,[orderid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Order does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `delete from orderpizzaTopping where orderid=$1`,[orderid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            pool.query(
+                                `delete from orders where orderid=$1`,[orderid],
+                                (err,results)=>{
+                                    if(err){
+                                        throw err;
+                                    }
+                                    else{
+                                        let no_err=[];
+                                        no_err.push({message:"Order has been deleted"});
+                                        res.json({no_err});
+                                    }
+                                }
+                            );
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 module.exports = {
     getadminLogin,
     getadminSignup,
@@ -845,5 +920,7 @@ module.exports = {
     updateToppingPrice,
     deletePizza,
     deleteTopping,
-    deleteOrderType
+    deleteOrderType,
+    // deleteCustomer,
+    deleteOrderByid
 };

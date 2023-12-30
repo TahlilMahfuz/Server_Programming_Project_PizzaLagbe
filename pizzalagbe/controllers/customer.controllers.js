@@ -362,6 +362,103 @@ const registerUser = async(req, res) => {
     }
 };
 
+const updatePhoneNumber = async(req, res) => {
+    let {userphone} = req.body;
+    let userid = req.session.user.customerid;
+    pool.query(
+        `update customers set customerphone=$1 where customerid=$2 returning *`,
+        [userphone,userid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                req.session.user = results.rows[0];
+                req.session.save();
+                let no_err=[];
+                no_err.push({message:"Phone number updated"});
+                res.status(200).json({no_err});
+            }
+        }
+    );
+}
+
+const updateFirstName = async(req, res) => {
+    let {firstname} = req.body;
+    let userid = req.session.user.customerid;
+    pool.query(
+        `update customers set firstname=$1 where customerid=$2 returning *`,
+        [firstname,userid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                req.session.user = results.rows[0];
+                req.session.save();
+                let no_err=[];
+                no_err.push({message:"First name updated"});
+                res.status(200).json({no_err});
+            }
+        }
+    );
+}
+
+const updateLastName = async(req, res) => {
+    let {lastname} = req.body;
+    let userid = req.session.user.customerid;
+    pool.query(
+        `update customers set lastname=$1 where customerid=$2 returning *`,
+        [lastname,userid],
+        (err, results) => {
+            if (err) {
+                throw err;
+            }
+            else{
+                req.session.user = results.rows[0];
+                req.session.save();
+                let no_err=[];
+                no_err.push({message:"Last name updated"});
+                res.status(200).json({no_err});
+            }
+        }
+    );
+}
+
+const deleteComment = async(req, res) => {
+    let {orderid} = req.body;
+    //check if order exists
+    pool.query(
+        `select * from orders where orderid=$1`,[orderid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Order does not exist"});
+                res.status(400).json({error});
+            }
+            else{
+                pool.query(
+                    `update orders set comment='' where orderid=$1`,
+                    [orderid],
+                    (err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Order deleted"});
+                            res.status(200).json({no_err}); 
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
 module.exports = {
     getDashboard,
     getUserDashboard,
@@ -379,5 +476,9 @@ module.exports = {
     googlelogin,
     googlecallback,
     googleredirect,
-    googlefailure
+    googlefailure,
+    updatePhoneNumber,
+    updateFirstName,
+    updateLastName,
+    deleteComment
 };

@@ -115,3 +115,8 @@ CREATE TABLE orderpizzatopping (
 insert into pizzas (pizzaname, details, price) values ('Chicken Pizza', 'Chicken, Onion, Capsicum, Cheese', 500);
 insert into toppings (toppingname, details, price) values ('Chicken', 'Chicken', 100);
 insert into ordertype (type) values ('Home Delivery 2');
+update orders set comment='adasdasd' where orderid=1;
+
+delete from customers where customerid=8
+delete from orderpizzatopping where orderid=6;
+delete from orders where orderid=5;

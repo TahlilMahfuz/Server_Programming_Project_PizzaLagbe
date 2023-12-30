@@ -33,7 +33,9 @@ const{
     updateToppingPrice,
     deletePizza,
     deleteTopping,
-    deleteOrderType
+    deleteOrderType,
+    // deleteCustomer,
+    deleteOrderByid
 } = require('../controllers/admin.controllers');
 
 
@@ -75,6 +77,8 @@ router.delete('/admin/deletebranch/:branchid', deleteBranch);
 router.delete('/admin/deletepizza/:pizzaid', deletePizza);
 router.delete('/admin/deletetopping/:toppingid', deleteTopping);
 router.delete('/admin/deleteordertype/:typeid', deleteOrderType);
+// router.delete('/admin/deletecustomer/:customerid', deleteCustomer);
+router.delete('/admin/deleteorderbyid/:orderid', deleteOrderByid);
 
 
 module.exports = router;
