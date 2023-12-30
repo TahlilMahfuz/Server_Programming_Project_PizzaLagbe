@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../sequelizeConfig'); // Adjust the path based on your actual file location
+const sequelize = require('../config/sequelizeConfig'); // Adjust the path based on your actual file location
 const Branch = require('./branches.model'); // Assuming you have a Branch model defined
 
 const Admin = sequelize.define('admins', {

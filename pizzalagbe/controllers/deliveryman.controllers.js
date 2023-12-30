@@ -1,4 +1,4 @@
-const {pool} = require("../dbconfig");
+const {pool} = require("../config/dbconfig");
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const sendMail = require("../middlewares/sendmail");

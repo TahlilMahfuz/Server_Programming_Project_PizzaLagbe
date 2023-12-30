@@ -1,29 +1,30 @@
 const express=require("express");
 const app = express();
-const {pool} = require("./dbconfig");
+const {pool} = require("./config/dbconfig");
 const bcrypt=require("bcrypt");
 const session=require("express-session");
 const flash=require("express-flash");
 const passport=require('passport');
 const qr=require('qrcode');
 const fs=require('fs');
-
-const initializePassport=require('./passportConfig');
+require("./config/oAuthConfig");
+const initializePassport=require('./config/passportConfig');
+const initializeAdminPassport=require('./config/adminPassportConfig');
 const sendMail = require("./middlewares/sendmail");
 const cookieParser = require("cookie-parser");
 
-//add sequilize
-const sequelize=require("./sequelizeConfig");
+
+const sequelize=require("./config/sequelizeConfig");
 sequelize.authenticate().then(() => {
     console.log('Database Connected');
 }).catch(err => {
     console.error('Unable to connect to the database:', err);
 }).finally(() => {
-    // Close the Sequelize connection when done (if necessary)
-    // await sequelize.close();
+    // sequelize.close();
 });
 
 initializePassport(passport);
+initializeAdminPassport(passport);
 
 require('dotenv').config()
 
@@ -65,8 +66,11 @@ const deliverman = require("./datamodels/deliveryman.model");
 const Orders = require("./datamodels/orders.model");
 const pizzas = require("./datamodels/pizzas.model");
 const OrderPizzaTopping = require("./datamodels/orderpizzatoppings.model");
-
-
+const { checkAuthenticated } = require("./middlewares/auth");
+  
+app.get('/auth/google/failure', (req, res) => {
+    res.send('Failed to authenticate..');
+});
 
 
 

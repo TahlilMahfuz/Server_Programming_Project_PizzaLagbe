@@ -1,4 +1,4 @@
-const {pool} = require("../dbconfig");
+const {pool} = require("../config/dbconfig");
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const sendMail = require("../middlewares/sendmail");
@@ -16,12 +16,12 @@ const getadminSignup = (req, res) => {
     pool.query(
         `SELECT * FROM branches`,
         (err, results) => {
-        if (err) {
-            throw err;
-        }
+            if (err) {
+                throw err;
+            }
 
-        const resultsArray = Array.from(results.rows);
-        res.render('admin/adminsignup', { results: resultsArray });
+            const resultsArray = Array.from(results.rows);
+            res.render('admin/adminsignup', { results: resultsArray });
         }
     );
 };
@@ -61,7 +61,7 @@ const getaddBranch = (req, res) => {
 };
 
 const getReviews = async (req, res) => {
-    console.log(req.session.admin);
+    console.log(req.user);
     await pool.query(
         `select *
         from orders natural join orderpizzatopping
@@ -71,7 +71,7 @@ const getReviews = async (req, res) => {
             natural join deliveryman
             natural join admins,pizzas,toppings
         where rating is not null and branchid=$1
-        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`,[req.session.admin.branchid],
+        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`,[req.user.branchid],
         (err,results)=>{
             if(err){
                 throw err;
@@ -83,7 +83,7 @@ const getReviews = async (req, res) => {
 };
 
 const getshowOrders =(req, res) => {
-    console.log(req.session.admin);
+    console.log(req.user);
     pool.query(
         `select *
         from orders natural join orderpizzatopping
@@ -92,7 +92,7 @@ const getshowOrders =(req, res) => {
             natural join branches
             natural join admins,pizzas,toppings
         where status=1 and branchid=$1
-        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`, [req.session.admin.branchid],
+        and orderpizzatopping.pizzaid=pizzas.pizzaid and orderpizzatopping.toppingid=toppings.toppingid`, [req.user.branchid],
         (err, results) => {
             if (err) {
                 throw err;
@@ -121,7 +121,7 @@ const markDelivered = (req, res) => {
                 pool.query(
                     `select *
                     from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
-                    where status=0 and branchid=$1`,[req.session.admin.branchid],
+                    where status=0 and branchid=$1`,[req.user.branchid],
                     (err,results)=>{
                         if(err){
                             throw err;
@@ -150,7 +150,7 @@ const markDelivered = (req, res) => {
                 pool.query(
                     `select *
                     from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
-                    where status=1 and branchid=$1`,[req.session.admin.branchid],
+                    where status=1 and branchid=$1`,[req.user.branchid],
                     (err,results)=>{
                         if(err){
                             throw err;
@@ -177,7 +177,7 @@ const markDelivered = (req, res) => {
                 pool.query(
                     `select *
                     from orders natural join orderpizzatopping natural join customers natural join ordertype natural join branches natural join admins
-                    where status=1 and branchid=$1`,[req.session.admin.branchid],
+                    where status=1 and branchid=$1`,[req.user.branchid],
                     (err,results)=>{
                         if(err){
                             throw err;
@@ -441,68 +441,379 @@ const adminRegister = async (req, res) => {
     }
 };
   
-const adminLogin = async (req, res) => {
-    let { adminemail, adminpassword } = req.body;
-    console.log("admin email: " + adminemail);
-    console.log("admin password: " + adminpassword);
-  
-    let error = [];
+const adminLogin = passport.authenticate("admin", {
+    successRedirect: "/admin/admindashboard",
+    failureRedirect: "admin/adminlogin",
+    failureFlash: true
+});
+
+const deleteBranch = (req, res) => {
+    let {branchid}=req.params;
+    console.log("The branchid name is : "+branchid);
     pool.query(
-      `select * from admins where adminemail=$1`,
-      [adminemail],
-      (err, results) => {
-        if (err) {
-          throw err;
-        }
-        console.log(results.rows);
-  
-        if (results.rows.length > 0) {
-          const admin = results.rows[0];
-  
-          bcrypt.compare(adminpassword, admin.adminpassword, (err, isMatch) => {
-            if (err) {
-              console.log(err);
+        `delete from branches where branchid=$1`,[branchid],
+        (err,results)=>{
+            if(err){
+                throw err;
             }
-            if (isMatch) {
-              pool.query(
-                `select * from branches`,
-                (err, results) => {
-                  if (err) {
-                    throw err;
-                  }
-                  const resultsArray = Array.from(results.rows);
-                  pool.query(
-                    `select * from ordertype`,
-                    (err, result) => {
-                      if (err) {
-                        throw err;
-                      }
-  
-                      const resultArray = Array.from(result.rows);
-                      req.session.admin = admin; // Save admin data in session
-                      res.render('admin/admindashboard', { results: resultsArray, result: resultArray });
-                    }
-                  );
-                }
-              );
-            } else {
-              // Password is incorrect
-              error.push({ message: "Incorrect Password" });
-              res.render("admin/adminlogin", { error });
+            else{
+                let no_err=[];
+                no_err.push({message:"Branch has been deleted"});
+                res.json({no_err});
             }
-          });
-        } else {
-          // No user
-          console.log("no user");
-          error.push({ message: "No admins found with this email" });
-          res.render("admin/adminlogin", { error });
         }
-      }
     );
 }
-  
-  // Export all controller functions
-  module.exports = {
+
+const putbranch = async(req,res)=>{
+    let {branchname}=req.params;
+    pool.query(
+        `insert into branches (branchname) values ($1)`,[branchname],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                let no_err=[];
+                no_err.push({message:"Branch has been added"});
+                res.json({no_err});
+            }
+        }
+);
+}   
+
+const updatebranch = async(req,res)=>{
+    let {branchid,branchname}=req.params;
+    console.log(branchid,branchname);  
+    //check if branch exists
+    pool.query(
+        `select * from branches where branchid=$1`,[branchid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Branch does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update branches set branchname=$1 where branchid=$2`,[branchname,branchid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Branch has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const updatePizzaPrice = async(req,res)=>{
+    let {pizzaid,price}=req.params;
+    console.log(pizzaid,price);  
+    pool.query(
+        `select * from pizzas where pizzaid=$1`,[pizzaid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Pizza does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update pizzas set price=$1 where pizzaid=$2`,[price,pizzaid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Pizza price has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const updatePizzaDetails = async(req,res)=>{
+    let {pizzaid,details}=req.params;
+    console.log(pizzaid,details);  
+    pool.query(
+        `select * from pizzas where pizzaid=$1`,[pizzaid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Pizza does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update pizzas set details=$1 where pizzaid=$2`,[details,pizzaid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Pizza details has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const updatePizzaName = async(req,res)=>{
+    let {pizzaid,pizzaname}=req.params;
+    console.log(pizzaid,pizzaname);  
+    pool.query(
+        `select * from pizzas where pizzaid=$1`,[pizzaid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Pizza does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update pizzas set pizzaname=$1 where pizzaid=$2`,[pizzaname,pizzaid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Pizza name has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const updatetoppingName = async(req,res)=>{
+    let {toppingid,toppingname}=req.params;
+    console.log(toppingid,toppingname);  
+    pool.query(
+        `select * from toppings where toppingid=$1`,[toppingid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Topping does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update toppings set toppingname=$1 where toppingid=$2`,[toppingname,toppingid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Topping name has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const updateToppingDetails = async(req,res)=>{
+    let {toppingid,details}=req.params;
+    console.log(toppingid,details);  
+    pool.query(
+        `select * from toppings where toppingid=$1`,[toppingid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Topping does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update toppings set details=$1 where toppingid=$2`,[details,toppingid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Topping details has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const updateToppingPrice = async(req,res)=>{
+    let {toppingid,price}=req.params;
+    console.log(toppingid,price);  
+    pool.query(
+        `select * from toppings where toppingid=$1`,[toppingid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Topping does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `update toppings set price=$1 where toppingid=$2`,[price,toppingid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Topping price has been updated"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const deletePizza =  async(req,res)=>{
+    let {pizzaid}=req.params;
+    console.log(pizzaid);  
+    pool.query(
+        `select * from pizzas where pizzaid=$1`,[pizzaid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Pizza does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `delete from pizzas where pizzaid=$1`,[pizzaid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Pizza has been deleted"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const deleteTopping = async(req,res)=>{
+    let {toppingid}=req.params;
+    console.log(toppingid);  
+    pool.query(
+        `select * from toppings where toppingid=$1`,[toppingid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Topping does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `delete from toppings where toppingid=$1`,[toppingid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Topping has been deleted"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+const deleteOrderType = async(req,res)=>{
+    let {typeid}=req.params;
+    console.log(typeid);  
+    pool.query(
+        `select * from ordertype where typeid=$1`,[typeid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                let error=[];
+                error.push({message:"Order type does not exist"});
+                res.json({error});
+            }
+            else if(results.rows.length>0){
+                pool.query(
+                    `delete from ordertype where typeid=$1`,[typeid],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            let no_err=[];
+                            no_err.push({message:"Order type has been deleted"});
+                            res.json({no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+}
+
+module.exports = {
     getadminLogin,
     getadminSignup,
     getadminDashboard,
@@ -523,4 +834,16 @@ const adminLogin = async (req, res) => {
     adminSignup,
     adminRegister,
     adminLogin,
-  };
+    deleteBranch,
+    putbranch,
+    updatebranch,
+    updatePizzaPrice,
+    updatePizzaDetails,
+    updatePizzaName,
+    updatetoppingName,
+    updateToppingDetails,
+    updateToppingPrice,
+    deletePizza,
+    deleteTopping,
+    deleteOrderType
+};

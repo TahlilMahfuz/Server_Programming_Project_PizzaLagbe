@@ -111,3 +111,7 @@ CREATE TABLE orderpizzatopping (
     CONSTRAINT fk_orderpizzatopping_toppingid FOREIGN KEY (toppingid)
         REFERENCES toppings (toppingid)
 );
+
+insert into pizzas (pizzaname, details, price) values ('Chicken Pizza', 'Chicken, Onion, Capsicum, Cheese', 500);
+insert into toppings (toppingname, details, price) values ('Chicken', 'Chicken', 100);
+insert into ordertype (type) values ('Home Delivery 2');

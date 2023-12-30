@@ -1,14 +1,69 @@
 // customerController.js
-const {pool} = require("../dbconfig");
+const {pool} = require("../config/dbconfig");
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const sendMail = require("../middlewares/sendmail");
+require("../config/oAuthConfig");
 
-const loginUser = passport.authenticate("local", {
+const loginUser = passport.authenticate("user", {
     successRedirect: "/user/dashboard",
     failureRedirect: "/user/userlogin",
     failureFlash: true
 });
+
+const googlelogin = passport.authenticate("google", {
+    scope: ["email", "profile"]
+});
+
+const googlecallback = passport.authenticate("google", {
+    successRedirect: "/user/googleredirect",
+    failureRedirect: "/auth/google/failure",
+    failureFlash: true
+});
+
+const googleredirect = (req, res) => {  
+    // console.log("hi i am here\n");
+    // res.json(req.user);
+    pool.query(
+        `select * from customers where customeremail=$1`,[req.user.email],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length>0){
+                req.session.user = results.rows[0];
+                req.session.save();
+                let no_err=[];
+                no_err.push({message:"Logged in using google authorization 2.0"});
+                res.render('user/dashboard',{no_err});
+            }
+            else{
+                pool.query(
+                    `insert into customers(firstname,lastname,customeremail) values($1,$2,$3) returning *`,
+                    [req.user.given_name,req.user.family_name,req.user.email],
+                    (err,results)=>{
+                        if(err){
+                            throw err;
+                        }
+                        else{
+                            req.session.user = results.rows[0];
+                            req.session.save();
+                            let no_err=[];
+                            no_err.push({message:"Logged in using google authorization 2.0"});
+                            res.render('user/dashboard',{no_err});
+                        }
+                    }
+                );
+            }
+        }
+    );
+};
+
+const googlefailure = (req, res) => {
+    let error=[];   
+    error.push({message:"Google authorization failed"});
+    res.render('user/userlogin',{error});
+};
 
 const getDashboard = (req, res) => {
     if(req.session.admin){
@@ -320,5 +375,9 @@ module.exports = {
     placeOrder,
     validateUserSignup,
     registerUser,
-    loginUser
+    loginUser,
+    googlelogin,
+    googlecallback,
+    googleredirect,
+    googlefailure
 };

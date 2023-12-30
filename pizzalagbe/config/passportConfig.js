@@ -44,6 +44,7 @@ function initialize(passport) {
   };
 
   passport.use(
+    'user',
     new LocalStrategy(
       { usernameField: "email", passwordField: "password" },
       authenticateUser
