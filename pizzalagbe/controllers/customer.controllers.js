@@ -22,8 +22,6 @@ const googlecallback = passport.authenticate("google", {
 });
 
 const googleredirect = (req, res) => {  
-    // console.log("hi i am here\n");
-    // res.json(req.user);
     pool.query(
         `select * from customers where customeremail=$1`,[req.user.email],
         (err,results)=>{
@@ -33,6 +31,7 @@ const googleredirect = (req, res) => {
             else if(results.rows.length>0){
                 req.session.user = results.rows[0];
                 req.session.save();
+                console.log(req.session.user);
                 let no_err=[];
                 no_err.push({message:"Logged in using google authorization 2.0"});
                 res.render('user/dashboard',{no_err});
@@ -46,8 +45,10 @@ const googleredirect = (req, res) => {
                             throw err;
                         }
                         else{
+                            console.log(results.rows[0]);
                             req.session.user = results.rows[0];
                             req.session.save();
+                            console.log(req.session.user);
                             let no_err=[];
                             no_err.push({message:"Logged in using google authorization 2.0"});
                             res.render('user/dashboard',{no_err});
@@ -190,6 +191,7 @@ const getOrderPizza = (req, res) => {
 
 const getCart = (req, res) => {
     let userid = req.session.user.customerid;
+    console.log(userid);
     pool.query(
         `SELECT *,
         CASE
@@ -363,7 +365,7 @@ const registerUser = async(req, res) => {
 };
 
 const updatePhoneNumber = async(req, res) => {
-    let {userphone} = req.body;
+    let {userphone} = req.params;
     let userid = req.session.user.customerid;
     pool.query(
         `update customers set customerphone=$1 where customerid=$2 returning *`,
@@ -384,7 +386,7 @@ const updatePhoneNumber = async(req, res) => {
 }
 
 const updateFirstName = async(req, res) => {
-    let {firstname} = req.body;
+    let {firstname} = req.params;
     let userid = req.session.user.customerid;
     pool.query(
         `update customers set firstname=$1 where customerid=$2 returning *`,
@@ -405,7 +407,7 @@ const updateFirstName = async(req, res) => {
 }
 
 const updateLastName = async(req, res) => {
-    let {lastname} = req.body;
+    let {lastname} = req.params;
     let userid = req.session.user.customerid;
     pool.query(
         `update customers set lastname=$1 where customerid=$2 returning *`,
@@ -426,7 +428,7 @@ const updateLastName = async(req, res) => {
 }
 
 const deleteComment = async(req, res) => {
-    let {orderid} = req.body;
+    let {orderid} = req.params;
     //check if order exists
     pool.query(
         `select * from orders where orderid=$1`,[orderid],
@@ -459,6 +461,82 @@ const deleteComment = async(req, res) => {
     );
 }
 
+const forgotPassword=async(req,res)=>{
+    res.render('user/postforgotpassword');
+}
+
+const validateForgotPassword=async(req,res)=>{
+    let {forgotemail}=req.body;
+    console.log(forgotemail);
+    let error=[];
+    pool.query(
+        `select * from customers where customeremail=$1`,[forgotemail],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                error.push({message:"Email does not exist"});
+                res.render("user/userlogin",{error});
+            }
+            else{
+                let userotp = Math.floor(1000 + Math.random() * 9000);
+                let message="Your otp varification code is ";
+                let subject="Verify your account";
+                sendMail(forgotemail,userotp,subject,message);
+                console.log(userotp);
+                res.render('user/setnewpassword',{forgotemail,userotp});
+            }
+        }
+    );
+}
+
+const setnewpassword=async(req,res)=>{
+    let {forgotemail, userotp, otp, newpass} = req.body;
+    console.log(forgotemail, userotp, otp, newpass);
+    let error=[];
+    pool.query(
+        `select * from customers where customeremail=$1`,[forgotemail],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else if(results.rows.length==0){
+                error.push({message:"Email does not exist"});
+                res.render("user/userlogin",{error});
+            }
+            else if(userotp!=otp){
+                error.push({message:"Invalid varification code"});
+                res.render("user/setnewpassword",{error});
+            }
+            else{
+                bcrypt.hash(newpass,10,(err,hash)=>{
+                    if(err){
+                        throw err;
+                    }
+                    else{
+                        pool.query(
+                            `update customers set customerpassword=$1 where customeremail=$2`,
+                            [hash,forgotemail],
+                            (err,results)=>{
+                                if(err){
+                                    throw err;
+                                }
+                                else{
+                                    let no_err=[];
+                                    no_err.push({message:"Password updated"});
+                                    res.status(200).render("user/userlogin",{no_err});
+                                }
+                            }
+                        );
+                    }
+                });
+            }
+        }
+    );
+}
+
+
 module.exports = {
     getDashboard,
     getUserDashboard,
@@ -480,5 +558,8 @@ module.exports = {
     updatePhoneNumber,
     updateFirstName,
     updateLastName,
-    deleteComment
+    deleteComment,
+    forgotPassword,
+    validateForgotPassword,
+    setnewpassword
 };

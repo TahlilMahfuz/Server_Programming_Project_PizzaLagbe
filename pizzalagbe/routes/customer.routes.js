@@ -22,7 +22,10 @@ const {
     updatePhoneNumber,
     updateFirstName,
     updateLastName,
-    deleteComment
+    deleteComment,
+    forgotPassword,
+    validateForgotPassword,
+    setnewpassword
 } = require('../controllers/customer.controllers');
 
 router.get("/", checkIndexAuthenticated, getDashboard);
@@ -36,6 +39,7 @@ router.get("/user/usersignup", getUserSignup);
 router.get("/userlogout", logout);
 router.get("/user/orderpizza",checkAuthenticated,  getOrderPizza);
 router.get("/user/cart",checkAuthenticated,  getCart);
+router.get("/user/forgotpassword", forgotPassword);
 
 
 router.post("/user/makereview", makeReview);
@@ -44,6 +48,8 @@ router.post("/user/orderpizza", placeOrder);
 router.post("/user/usersignup", validateUserSignup);
 router.post("/user/register", registerUser);
 router.post("/user/userlogin", loginUser);
+router.post("/user/validateforgotpassword",validateForgotPassword);
+router.post("/user/setnewpassword",setnewpassword);
 
 
 router.put("/user/updatephonenumber/:userphone",checkAuthenticated, updatePhoneNumber);

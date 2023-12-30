@@ -117,6 +117,42 @@ insert into toppings (toppingname, details, price) values ('Chicken', 'Chicken',
 insert into ordertype (type) values ('Home Delivery 2');
 update orders set comment='adasdasd' where orderid=1;
 
-delete from customers where customerid=8
+delete from customers where customerid=10
 delete from orderpizzatopping where orderid=6;
 delete from orders where orderid=5;
+
+SELECT *,
+        CASE
+        WHEN status = 1 THEN 'Preparing'
+        WHEN status = 2 THEN 'Deliveryman in progress'
+        WHEN status = 3 THEN 'Delivered'
+        WHEN status = 4 THEN 'Delivered'
+        WHEN status = 5 THEN 'Deleted'
+        END AS status_text
+        FROM orders
+        NATURAL JOIN orderpizzatopping
+        NATURAL JOIN customers
+        NATURAL JOIN ordertype
+        NATURAL JOIN branches
+        natural join deliveryman
+        natural join pizzas,toppings
+        WHERE customerid = 11 AND status <=5
+        and orderpizzatopping.toppingid=toppings.toppingid
+
+SELECT *,
+        CASE
+        WHEN status = 1 THEN 'Preparing'
+        WHEN status = 2 THEN 'Deliveryman in progress'
+        WHEN status = 3 THEN 'Delivered'
+        WHEN status = 4 THEN 'Delivered'
+        WHEN status = 5 THEN 'Deleted'
+        END AS status_text
+        FROM orders
+        NATURAL JOIN orderpizzatopping
+        NATURAL JOIN customers
+        NATURAL JOIN ordertype
+        NATURAL JOIN branches
+        natural join deliveryman
+        natural join pizzas,toppings
+        WHERE customerid = 11 AND status <=5
+        and orderpizzatopping.toppingid=toppings.toppingid
