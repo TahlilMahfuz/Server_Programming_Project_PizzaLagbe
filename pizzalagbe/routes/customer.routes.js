@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { checkIndexAuthenticated, checkNotAuthenticated, checkAuthenticated } = require('../middlewares/auth');
+const { uploadProfileImage, uploadAudioFile } = require('../middlewares/media.middleware');
 const {
     googlelogin,
     googlecallback,
@@ -25,7 +26,9 @@ const {
     deleteComment,
     forgotPassword,
     validateForgotPassword,
-    setnewpassword
+    setnewpassword,
+    uploadImage,
+    uploadVoiceReview
 } = require('../controllers/customer.controllers');
 
 router.get("/", checkIndexAuthenticated, getDashboard);
@@ -50,7 +53,8 @@ router.post("/user/register", registerUser);
 router.post("/user/userlogin", loginUser);
 router.post("/user/validateforgotpassword",validateForgotPassword);
 router.post("/user/setnewpassword",setnewpassword);
-
+router.post('/user/uploadProfileImage', uploadProfileImage.single('image'), uploadImage);
+router.post('/user/uploadVoiceReview', uploadAudioFile.single('audio'), uploadVoiceReview);
 
 router.put("/user/updatephonenumber/:userphone",checkAuthenticated, updatePhoneNumber);
 router.put("/user/updatefirstname/:firstname",checkAuthenticated, updateFirstName);

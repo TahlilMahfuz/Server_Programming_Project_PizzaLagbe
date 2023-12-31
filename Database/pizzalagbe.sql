@@ -112,6 +112,22 @@ CREATE TABLE orderpizzatopping (
         REFERENCES toppings (toppingid)
 );
 
+create table photos(
+    photoid serial primary key,
+    customerid int,
+    photoname varchar(100),
+    CONSTRAINT fk_photos_customerid FOREIGN KEY (customerid)
+        REFERENCES customers (customerid)
+);
+
+create table audios(
+    audioid serial primary key,
+    orderid int,
+    audioname varchar(100),
+    CONSTRAINT fk_audios_orderid FOREIGN KEY (orderid)
+        REFERENCES orders (orderid)
+);
+
 insert into pizzas (pizzaname, details, price) values ('Chicken Pizza', 'Chicken, Onion, Capsicum, Cheese', 500);
 insert into toppings (toppingname, details, price) values ('Chicken', 'Chicken', 100);
 insert into ordertype (type) values ('Home Delivery 2');
@@ -121,38 +137,6 @@ delete from customers where customerid=10
 delete from orderpizzatopping where orderid=6;
 delete from orders where orderid=5;
 
-SELECT *,
-        CASE
-        WHEN status = 1 THEN 'Preparing'
-        WHEN status = 2 THEN 'Deliveryman in progress'
-        WHEN status = 3 THEN 'Delivered'
-        WHEN status = 4 THEN 'Delivered'
-        WHEN status = 5 THEN 'Deleted'
-        END AS status_text
-        FROM orders
-        NATURAL JOIN orderpizzatopping
-        NATURAL JOIN customers
-        NATURAL JOIN ordertype
-        NATURAL JOIN branches
-        natural join deliveryman
-        natural join pizzas,toppings
-        WHERE customerid = 11 AND status <=5
-        and orderpizzatopping.toppingid=toppings.toppingid
 
-SELECT *,
-        CASE
-        WHEN status = 1 THEN 'Preparing'
-        WHEN status = 2 THEN 'Deliveryman in progress'
-        WHEN status = 3 THEN 'Delivered'
-        WHEN status = 4 THEN 'Delivered'
-        WHEN status = 5 THEN 'Deleted'
-        END AS status_text
-        FROM orders
-        NATURAL JOIN orderpizzatopping
-        NATURAL JOIN customers
-        NATURAL JOIN ordertype
-        NATURAL JOIN branches
-        natural join deliveryman
-        natural join pizzas,toppings
-        WHERE customerid = 11 AND status <=5
-        and orderpizzatopping.toppingid=toppings.toppingid
+insert into photos (customerid, photoname) values (1, '1.jpg');
+insert into audios (orderid, audioname) values (1, '1.mp3');

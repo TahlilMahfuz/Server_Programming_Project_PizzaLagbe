@@ -13,7 +13,7 @@ const {
 
 
 router.get('/deliveryman/changepassword', getChangePassword);
-router.get('/deliveryman/deliverymanlogin', getDeliverymanLogin);
+router.get('/deliveryman/deliverymanlogin', getDeliverymanLogin);   
 router.get('/deliveryman/enddelivery', getEndDelivery);
 router.post('/deliveryman/changepassword', postChangePassword);
 router.post('/deliveryman/delivered', postDelivered);

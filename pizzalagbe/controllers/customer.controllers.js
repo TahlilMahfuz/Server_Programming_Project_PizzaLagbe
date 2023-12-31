@@ -536,6 +536,62 @@ const setnewpassword=async(req,res)=>{
     );
 }
 
+const uploadImage = async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+      const photo = req.file.filename;
+      if(photo){
+        pool.query(
+            `insert into photos (customerid, photoname) values ($1,$2)`,[req.user.customerid, photo],
+            (err,results)=>{
+                if(err){
+                    throw err;
+                }
+                else{
+                    console.log("Image uploaded successfully");
+                    res.json({ message: "Profile image uploaded successfully" });
+                }
+            });
+      }
+      else{
+        res.status(400).json({message: "Image not found"});
+      }
+    } 
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+
+const  uploadVoiceReview = async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+      const audio = req.file.filename;
+      if(audio){
+        pool.query(
+            `insert into audios (orderid, audioname) values ($1,$2)`,[req.user.customerid, audio],
+            (err,results)=>{
+                if(err){
+                    throw err;
+                }
+                else{
+                    console.log("Audio uploaded successfully");
+                    res.json({ message: "Audio uploaded successfully" });
+                }
+            });
+      }
+      else{
+        res.status(400).json({message: "Audio not found"});
+      }
+    } 
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+} 
 
 module.exports = {
     getDashboard,
@@ -561,5 +617,7 @@ module.exports = {
     deleteComment,
     forgotPassword,
     validateForgotPassword,
-    setnewpassword
+    setnewpassword,
+    uploadImage,
+    uploadVoiceReview
 };
