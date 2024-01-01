@@ -28,7 +28,9 @@ const {
     validateForgotPassword,
     setnewpassword,
     uploadImage,
-    uploadVoiceReview
+    uploadVoiceReview,
+    deletephoto,
+    deleteaudio
 } = require('../controllers/customer.controllers');
 
 router.get("/", checkIndexAuthenticated, getDashboard);
@@ -62,5 +64,7 @@ router.put("/user/updatelastname/:lastname",checkAuthenticated, updateLastName);
 
 
 router.delete("/user/deletecomment/:orderid",checkAuthenticated, deleteComment);
+router.delete("/user/deletephoto/:photoid",checkAuthenticated, deletephoto);
+router.delete("/user/deleteaudio/:audioid",checkAuthenticated, deleteaudio);
 
 module.exports = router;

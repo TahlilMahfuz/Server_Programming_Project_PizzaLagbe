@@ -133,10 +133,18 @@ insert into toppings (toppingname, details, price) values ('Chicken', 'Chicken',
 insert into ordertype (type) values ('Home Delivery 2');
 update orders set comment='adasdasd' where orderid=1;
 
-delete from customers where customerid=10
+delete from customers where customerid=;
 delete from orderpizzatopping where orderid=6;
 delete from orders where orderid=5;
 
 
 insert into photos (customerid, photoname) values (1, '1.jpg');
 insert into audios (orderid, audioname) values (1, '1.mp3');
+
+delete from photos where photoid=1 returning *;
+
+insert into photos (customerid, photoname)
+values (1, '5d171897-4ee5-4969-a854-c4dee1b406d7-1703994302248.jpg') returning *;
+
+drop table audios;
+drop table photos;

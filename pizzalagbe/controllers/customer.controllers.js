@@ -3,6 +3,7 @@ const {pool} = require("../config/dbconfig");
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const sendMail = require("../middlewares/sendmail");
+const fs = require('fs');
 require("../config/oAuthConfig");
 
 const loginUser = passport.authenticate("user", {
@@ -593,6 +594,58 @@ const  uploadVoiceReview = async (req, res) => {
     }
 } 
 
+const deletephoto = async(req,res)=>{
+    let {photoid} = req.params;
+    pool.query(
+        `delete from photos where photoid=$1 returning *`,[photoid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                let result = results.rows[0];
+                let photo = result.photoname;
+                console.log("Photo Name: "+photo);
+                fs.unlink(`./uploads/${photo}`, (err) => {
+                    if (err) {
+                        console.error(err)
+                        res.status(400).json({message:"Photo not found"});
+                    }
+                    else{
+                        console.log("Photo deleted");
+                        res.status(200).json({message:"Photo deleted",photo});
+                    }
+                });
+            }
+        }
+    );
+}
+
+const deleteaudio = async(req,res)=>{
+    let {audioid} = req.params;
+    pool.query(
+        `delete from audios where audioid=$1 returning *`,[audioid],
+        (err,results)=>{
+            if(err){
+                throw err;
+            }
+            else{
+                let result = results.rows[0];
+                let audio = result.audioname;
+                fs.unlink(`./uploads/${audio}`, (err) => {
+                    if (err) {
+                        console.error(err)
+                        res.status(400).json({message:"Audio not found"});
+                    }
+                    else{
+                        res.status(200).json({message:"Audio deleted",audio});
+                    }
+                });
+            }
+        }
+    );
+}
+
 module.exports = {
     getDashboard,
     getUserDashboard,
@@ -619,5 +672,7 @@ module.exports = {
     validateForgotPassword,
     setnewpassword,
     uploadImage,
-    uploadVoiceReview
+    uploadVoiceReview,
+    deletephoto,
+    deleteaudio
 };
