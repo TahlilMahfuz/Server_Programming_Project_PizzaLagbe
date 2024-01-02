@@ -4,15 +4,15 @@ const passport = require('passport');
 const sendMail = require("../middlewares/sendmail");
 
 
-const getadminLogin = (req, res) => {
+const getadminLogin = async (req,res) => {
     res.render('admin/adminlogin');
 };
 
-const getaddOrderType = (req, res) => {
+const getaddOrderType = async (req,res) => {
     res.render('admin/addordertype');
 };
 
-const getadminSignup = (req, res) => {
+const getadminSignup = async (req,res) => {
     pool.query(
         `SELECT * FROM branches`,
         (err, results) => {
@@ -26,7 +26,7 @@ const getadminSignup = (req, res) => {
     );
 };
 
-const getadminDashboard = (req, res) => {
+const getadminDashboard = async (req,res) => {
     pool.query(
         `select * from branches`,
         (err,results)=>{
@@ -48,19 +48,19 @@ const getadminDashboard = (req, res) => {
         }
     );
 };
-const getaddPizza = (req, res) => {
+const getaddPizza = async (req,res) => {
    res.render('admin/addpizza');
 };
 
-const getaddTopping = (req, res) => {
+const getaddTopping = async (req,res) => {
     res.render('admin/addtopping');
 };
 
-const getaddBranch = (req, res) => {
+const getaddBranch = async (req,res) => {
     res.render('admin/addbranch');
 };
 
-const getReviews = async (req, res) => {
+const getReviews = async (req,res) => {
     console.log(req.user);
     await pool.query(
         `select *
@@ -82,7 +82,7 @@ const getReviews = async (req, res) => {
     );
 };
 
-const getshowOrders =(req, res) => {
+const getshowOrders =async (req,res) => {
     console.log(req.user);
     pool.query(
         `select *
@@ -103,7 +103,7 @@ const getshowOrders =(req, res) => {
     );
 };  
 
-const markDelivered = (req, res) => {
+const markDelivered = async (req,res) => {
     let {orderid}=req.body;
     console.log("The orderid name is : "+orderid);
     pool.query(
@@ -132,7 +132,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const markReady = (req, res) => {
+  const markReady = async (req,res) => {
     let {orderid}=req.body;
     console.log("The orderid name is : "+orderid);
     pool.query(
@@ -161,7 +161,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const deleteOrder = (req, res) => {
+  const deleteOrder = async (req,res) => {
     let { orderid } = req.body;
     console.log("The orderid name is : "+orderid);
     pool.query(
@@ -188,7 +188,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const addBranch = (req, res) => {
+  const addBranch = async (req,res) => {
     let {branch}=req.body;
     console.log("The branch name is : "+branch);
     pool.query(
@@ -221,7 +221,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const addOrderType = (req, res) => {
+  const addOrderType = async (req,res) => {
     let {ordertype}=req.body;
     pool.query(
         `select * from ordertype where type=$1`,[ordertype],
@@ -253,14 +253,18 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const addDeliveryMan = async (req, res) => {
+  const addDeliveryMan = async (req,res) => {
     let {name,dtype,hidden_dtype,branch,hidden_branch,phone} = req.body;
 
     console.log(name,dtype,branch,phone);
 
+    let password = "123";
+    let hash=await bcrypt.hash(password,10);
+
     pool.query(
-        `Insert into deliveryman (typeid,name,branchid,phone)
-        values ($1,$2,$3,$4) returning deliverymanid,typeid,name,branchid,phone`,[dtype,name,branch,phone],
+        `Insert into deliveryman (typeid,name,branchid,phone,password)
+        values ($1,$2,$3,$4,$5) returning deliverymanid,typeid,name,branchid,phone`,
+        [dtype,name,branch,phone,hash],
         (err,results)=>{
             if(err){
                 throw err;
@@ -293,7 +297,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const addPizza = async (req, res) => {
+  const addPizza = async (req,res) => {
     let {pizzaname,details,price} = req.body;
 
     console.log(pizzaname,details,price);
@@ -314,7 +318,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-  const addTopping = async (req, res) => {
+  const addTopping = async (req,res) => {
     let {toppingname,details,price} = req.body;
 
     console.log(toppingname,details,price);
@@ -335,7 +339,7 @@ const markDelivered = (req, res) => {
     );
   };
   
-const adminSignup = async (req, res) => {
+const adminSignup = async (req,res) => {
     let {masterkey,adminname,branchid,adminemail,adminphone,adminpassword,cadminpassword} = req.body;
 
     console.log(masterkey,adminname,branchid,adminemail,adminphone,adminpassword,cadminpassword);
@@ -407,7 +411,7 @@ const adminSignup = async (req, res) => {
     }
 };
   
-const adminRegister = async (req, res) => {
+const adminRegister = async (req,res) => {
     let {adminname,branchid,adminemail,adminphone,adminpassword,adminotp,adminvarcode} = req.body;
     let error=[];
     if(adminotp!=adminvarcode){
@@ -444,7 +448,7 @@ const adminLogin = passport.authenticate("admin", {
     failureFlash: true
 });
 
-const deleteBranch = (req, res) => {
+const deleteBranch = async (req,res) => {
     let {branchid}=req.params;
     console.log("The branchid name is : "+branchid);
     pool.query(
@@ -810,41 +814,6 @@ const deleteOrderType = async(req,res)=>{
     );
 }
 
-// const deleteCustomer = async(req,res)=>{
-//     let {customerid}=req.params;
-//     console.log(customerid);  
-//     pool.query(
-//         `select * from customers where customerid=$1`,[customerid],
-//         (err,results)=>{
-//             if(err){
-//                 throw err;
-//             }
-//             else if(results.rows.length==0){
-//                 let error=[];
-//                 error.push({message:"Customer does not exist"});
-//                 res.json({error});
-//             }
-//             else if(results.rows.length>0){
-//                 pool.query(
-//                     `delete from orderpizzatopping natural join orders 
-//                     natural join customers where customerid=$1`,[customerid],
-//                     (err,results)=>{
-//                         if(err){
-//                             throw err;
-//                         }
-//                         else{
-//                             let no_err=[];
-//                             no_err.push({message:"Customer has been deleted"});
-//                             res.json({no_err});
-//                         }
-//                     }
-//                 );
-                
-//             }
-//         }
-//     );
-// }
-
 const deleteOrderByid = async(req,res)=>{
     let {orderid}=req.params;
     console.log(orderid);  
@@ -921,6 +890,5 @@ module.exports = {
     deletePizza,
     deleteTopping,
     deleteOrderType,
-    // deleteCustomer,
     deleteOrderByid
 };

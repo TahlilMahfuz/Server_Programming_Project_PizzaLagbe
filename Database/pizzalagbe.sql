@@ -148,3 +148,6 @@ values (1, '5d171897-4ee5-4969-a854-c4dee1b406d7-1703994302248.jpg') returning *
 
 drop table audios;
 drop table photos;
+
+update deliveryman set password = '$2b$10$w0MwUpeJh90mjizI5RBAQODFjaGykRSd8BLfQUmJWjFHckuvH8ocW'
+where deliverymanid='2-1-Tah-Dha-834';

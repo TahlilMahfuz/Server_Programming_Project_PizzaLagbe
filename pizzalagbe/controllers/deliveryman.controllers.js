@@ -2,7 +2,7 @@ const {pool} = require("../config/dbconfig");
 const bcrypt = require('bcrypt');
 const passport = require('passport');
 const sendMail = require("../middlewares/sendmail");
-// Controller functions
+
 const getChangePassword = (req, res) => {
     res.render('deliveryman/changepassword');
 };
@@ -14,7 +14,7 @@ const getDeliverymanLogin = (req, res) => {
 const getEndDelivery = (req, res) => {
     pool.query(
         `select * from orders natural join ordertype natural join customers natural join branches where status=2 and typeid=1 and branchid=$1`,
-        [req.session.deliveryman.branchid],
+        [req.user.branchid],
         (err, results) => {
             if (err) {
                 throw err;
@@ -28,9 +28,10 @@ const getEndDelivery = (req, res) => {
 
 const postChangePassword = (req, res) => {
     let { password } = req.body;
+    password =  bcrypt.hashSync(password, 10);
     pool.query(
         `update deliveryman set password=$1 where deliverymanid=$2`,
-        [password, req.session.deliveryman.deliverymanid],
+        [password, req.user.deliverymanid],
         (err, results) => {
             if (err) {
                 throw err;
@@ -38,7 +39,7 @@ const postChangePassword = (req, res) => {
                 pool.query(
                     `select * from orders natural join deliveryman,customers
                     where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
-                    [req.session.deliveryman.deliverymanid],
+                    [req.user.deliverymanid],
                     (err, results) => {
                         if (err) {
                             throw err;
@@ -57,10 +58,10 @@ const postChangePassword = (req, res) => {
 
 const postDelivered = (req, res) => {
     let { orderid } = req.body;
-    let deliverymanid=req.session.deliveryman.deliverymanid;
+    let deliverymanid=req.user.deliverymanid;
     console.log('The deliveryman id is : '+deliverymanid);
     console.log('The order id is : '+orderid);
-    console.log('The branch id is : '+req.session.deliveryman.branchid);
+    console.log('The branch id is : '+req.user.branchid);
     pool.query(
         `update orders set status=status+1 where orderid=$1`, [orderid],
         (err, results) => {
@@ -70,7 +71,7 @@ const postDelivered = (req, res) => {
             pool.query(
                 `select * from orders natural join deliveryman,customers
                 where orders.customerid=customers.customerid and deliverymanid=$1 and status=2`,
-                    [req.session.deliveryman.deliverymanid],
+                    [req.user.deliverymanid],
                     (err, results) => {
                     if (err) {
                         throw err;
@@ -89,56 +90,9 @@ const postDelivered = (req, res) => {
     );
 };
 
-// const postDeliverymanLogin = (req, res) => {
-//     let { deliverymanid, deliverymanpassword } = req.body;
-//     pool.query(
-//         `select * from deliveryman where deliverymanid = $1`, [deliverymanid],
-//         (err, results) => {
-//             if (err) {
-//                 throw err;
-//             } 
-//             else if (results.rows.length > 0) {
-//                 console.log('The password is'+deliverymanpassword);
-//                 console.log('The database password is'+results.rows[0].password);
-//                 if (deliverymanpassword === results.rows[0].password) {
-//                     const deliveryman=results.rows[0];
-//                     req.session.deliveryman=deliveryman;
-//                     pool.query(
-//                         `select * from orders natural join deliveryman,customers,branches,ordertype
-//                         where orders.customerid=customers.customerid and deliverymanid=$1 and status=2
-//                         and ordertype.typeid=orders.typeid and branches.branchid=orders.branchid`,
-//                             [req.session.deliveryman.deliverymanid],
-//                             (err, results) => {
-//                             if (err) {
-//                                 throw err;
-//                             }
-//                             else{
-//                                 const resultsArray = Array.from(results.rows);
-//                                 console.log(results);
-//                                 res.render('deliveryman/deliverymandashboard',{results:resultsArray});
-//                             }
-                
-//                         }
-//                     );
-//                 } 
-//                 else {
-//                     let error = [];
-//                     error.push({ message: "Incorrect Password" });
-//                     res.render('deliveryman/deliverymanlogin', { error });
-//                 }
-//             } 
-//             else {
-//                 let error = [];
-//                 error.push({ message: "No deliveryman exists with this email." });
-//                 res.render('deliveryman/deliverymanlogin', { error });
-//             }
-//         }
-//     );
-// };
-
 const postDeliverymanLogin = passport.authenticate('deliveryman', {
-    successRedirect: '/deliveryman/dashboard',
-    failureRedirect: '/deliveryman/login',
+    successRedirect: '/deliveryman/enddelivery',
+    failureRedirect: '/deliveryman/deliverymanlogin',
     failureFlash: true
 });
 
@@ -160,7 +114,6 @@ const getdeliverymandashboard= async (req,res)=>{
     }
 }
 
-// Export the controller functions
 module.exports = {
     getChangePassword,
     getDeliverymanLogin,

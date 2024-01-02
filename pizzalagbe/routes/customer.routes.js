@@ -30,7 +30,9 @@ const {
     uploadImage,
     uploadVoiceReview,
     deletephoto,
-    deleteaudio
+    deleteaudio,
+    uploadMultipleImages,
+    uploadMultipleAudios
 } = require('../controllers/customer.controllers');
 
 router.get("/", checkIndexAuthenticated, getDashboard);
@@ -47,16 +49,18 @@ router.get("/user/cart",checkAuthenticated,  getCart);
 router.get("/user/forgotpassword", forgotPassword);
 
 
-router.post("/user/makereview", makeReview);
-router.post("/user/review", showReviewForm);
-router.post("/user/orderpizza", placeOrder);
+router.post("/user/makereview",checkAuthenticated, makeReview);
+router.post("/user/review",checkAuthenticated, showReviewForm);
+router.post("/user/orderpizza",checkAuthenticated, placeOrder);
 router.post("/user/usersignup", validateUserSignup);
 router.post("/user/register", registerUser);
 router.post("/user/userlogin", loginUser);
 router.post("/user/validateforgotpassword",validateForgotPassword);
 router.post("/user/setnewpassword",setnewpassword);
-router.post('/user/uploadProfileImage', uploadProfileImage.single('image'), uploadImage);
-router.post('/user/uploadVoiceReview', uploadAudioFile.single('audio'), uploadVoiceReview);
+router.post('/user/uploadProfileImage',checkAuthenticated, uploadProfileImage.single('image'), uploadImage);
+router.post('/user/uploadMultipleProfileImages',checkAuthenticated, uploadProfileImage.array('images', 5), uploadMultipleImages);
+router.post('/user/uploadVoiceReview/:orderid',checkAuthenticated, uploadAudioFile.single('audio'), uploadVoiceReview);
+router.post('/user/uploadMultipleVoiceReview/:orderid',checkAuthenticated, uploadAudioFile.array('audios', 5), uploadMultipleAudios);
 
 router.put("/user/updatephonenumber/:userphone",checkAuthenticated, updatePhoneNumber);
 router.put("/user/updatefirstname/:firstname",checkAuthenticated, updateFirstName);

@@ -18,12 +18,12 @@ function initialize(passport) {
 
         if (results.rows.length > 0) {
           const user = results.rows[0];
-          if(deliverymanid === user.deliverymanid){
+          if(deliverymanid === user.deliverymanid && bcrypt.compareSync(deliverymanpassword, user.password)){
             return done(null, user);
           }
           else {
             //password is incorrect
-            return done(null, false, { message: "Password is incorrect" });
+            return done(null, false, { message: "Password or ID is incorrect" });
           }
         } 
         else {

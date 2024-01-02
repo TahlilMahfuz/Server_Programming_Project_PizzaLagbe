@@ -34,7 +34,6 @@ const{
     deletePizza,
     deleteTopping,
     deleteOrderType,
-    // deleteCustomer,
     deleteOrderByid
 } = require('../controllers/admin.controllers');
 
@@ -43,42 +42,41 @@ const{
 router.get('/admin/adminlogin',checkAdminNotAuthenticated, getadminLogin);
 router.get('/admin/adminsignup', getadminSignup);
 router.get('/admin/admindashboard',checkAdminAuthenticated, getadminDashboard);
-router.get('/admin/addordertype', getaddOrderType);
-router.get('/admin/addpizza', getaddPizza);
-router.get('/admin/addtopping', getaddTopping);
-router.get('/admin/addbranch', getaddBranch);
-router.get('/admin/getreviews', getReviews);
-router.get('/admin/showorders', getshowOrders);
+router.get('/admin/addordertype',checkAdminAuthenticated, getaddOrderType);
+router.get('/admin/addpizza',checkAdminAuthenticated, getaddPizza);
+router.get('/admin/addtopping',checkAdminAuthenticated, getaddTopping);
+router.get('/admin/addbranch',checkAdminAuthenticated, getaddBranch);
+router.get('/admin/getreviews',checkAdminAuthenticated, getReviews);
+router.get('/admin/showorders',checkAdminAuthenticated, getshowOrders);
 
 
-router.post('/admin/delivered', markDelivered);
-router.post('/admin/ready', markReady);
-router.post('/admin/delete', deleteOrder);
-router.post('/admin/addbranch', addBranch);
-router.post('/admin/addordertype', addOrderType);
-router.post('/admin/adddeliveryman', addDeliveryMan);
-router.post('/admin/addpizza', addPizza);
-router.post('/admin/addtopping', addTopping);
+router.post('/admin/delivered',checkAdminAuthenticated, markDelivered);
+router.post('/admin/ready',checkAdminAuthenticated, markReady);
+router.post('/admin/delete',checkAdminAuthenticated, deleteOrder);
+router.post('/admin/addbranch',checkAdminAuthenticated, addBranch);
+router.post('/admin/addordertype',checkAdminAuthenticated, addOrderType);
+router.post('/admin/adddeliveryman',checkAdminAuthenticated, addDeliveryMan);
+router.post('/admin/addpizza',checkAdminAuthenticated, addPizza);
+router.post('/admin/addtopping',checkAdminAuthenticated, addTopping);
 router.post('/admin/adminsignup', adminSignup);
 router.post('/admin/adminregister', adminRegister);
 router.post('/admin/adminlogin', adminLogin);
 
-router.put('/admin/putbranch/:branchname', putbranch);
-router.put('/admin/updatebranch/:branchid/:branchname', updatebranch);
-router.put('/admin/updatepizzaprice/:pizzaid/:price', updatePizzaPrice);
-router.put('/admin/updatepizzadetails/:pizzaid/:details', updatePizzaDetails);
-router.put('/admin/updatepizzaname/:pizzaid/:pizzaname', updatePizzaName);
-router.put('/admin/updatetoppingname/:toppingid/:toppingname', updatetoppingName);
-router.put('/admin/updatetoppingdetails/:toppingid/:details', updateToppingDetails);
-router.put('/admin/updatetoppingprice/:toppingid/:price', updateToppingPrice);
+router.put('/admin/putbranch/:branchname',checkAdminAuthenticated, putbranch);
+router.put('/admin/updatebranch/:branchid/:branchname',checkAdminAuthenticated, updatebranch);
+router.put('/admin/updatepizzaprice/:pizzaid/:price',checkAdminAuthenticated, updatePizzaPrice);
+router.put('/admin/updatepizzadetails/:pizzaid/:details',checkAdminAuthenticated, updatePizzaDetails);
+router.put('/admin/updatepizzaname/:pizzaid/:pizzaname',checkAdminAuthenticated, updatePizzaName);
+router.put('/admin/updatetoppingname/:toppingid/:toppingname',checkAdminAuthenticated, updatetoppingName);
+router.put('/admin/updatetoppingdetails/:toppingid/:details',checkAdminAuthenticated, updateToppingDetails);
+router.put('/admin/updatetoppingprice/:toppingid/:price',checkAdminAuthenticated, updateToppingPrice);
 
 
-router.delete('/admin/deletebranch/:branchid', deleteBranch);
-router.delete('/admin/deletepizza/:pizzaid', deletePizza);
-router.delete('/admin/deletetopping/:toppingid', deleteTopping);
-router.delete('/admin/deleteordertype/:typeid', deleteOrderType);
-// router.delete('/admin/deletecustomer/:customerid', deleteCustomer);
-router.delete('/admin/deleteorderbyid/:orderid', deleteOrderByid);
+router.delete('/admin/deletebranch/:branchid',checkAdminAuthenticated, deleteBranch);
+router.delete('/admin/deletepizza/:pizzaid',checkAdminAuthenticated, deletePizza);
+router.delete('/admin/deletetopping/:toppingid',checkAdminAuthenticated, deleteTopping);
+router.delete('/admin/deleteordertype/:typeid',checkAdminAuthenticated, deleteOrderType);
+router.delete('/admin/deleteorderbyid/:orderid',checkAdminAuthenticated, deleteOrderByid);
 
 
 module.exports = router;

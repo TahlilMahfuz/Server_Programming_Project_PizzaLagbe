@@ -47,7 +47,7 @@ Admin.belongsTo(Branch, { foreignKey: 'branchid' });
 
 Admin.sync({ force: false })
   .then(() => {
-    console.log('Admin table created');
+    console.log('Admin table Initialized');
   })
   .catch((err) => {
     console.log(err);

@@ -38,11 +38,29 @@ const checkAdminNotAuthenticated = (req, res, next) => {
     next();
 }
 
+const checkDeliverymanAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    let error = [];
+    error.push({ message: "You are unauthorized" });
+    res.render("deliveryman/deliverymanlogin", { error });
+}
+
+const checkDeliverymanNotAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        return res.redirect("/deliveryman/enddelivery");
+    }
+    next();
+}
+
 
 module.exports = {
     checkIndexAuthenticated,
     checkAuthenticated,
     checkNotAuthenticated,
     checkAdminAuthenticated,
-    checkAdminNotAuthenticated
+    checkAdminNotAuthenticated,
+    checkDeliverymanAuthenticated,
+    checkDeliverymanNotAuthenticated
 }

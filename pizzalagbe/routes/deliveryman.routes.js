@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { checkIndexAuthenticated, checkNotAuthenticated, checkAuthenticated } = require('../middlewares/auth');
+const { checkDeliverymanAuthenticated, checkDeliverymanNotAuthenticated } = require('../middlewares/auth');
 
 const {
     getChangePassword,
@@ -14,9 +14,8 @@ const {
 
 
 router.get('/deliveryman/changepassword', getChangePassword);
-router.get('/deliveryman/deliverymanlogin', getDeliverymanLogin);   
-router.get('/deliveryman/enddelivery', getEndDelivery);
-router.get('/deliveryman/dashboard',getdeliverymandashboard);
+router.get('/deliveryman/deliverymanlogin',checkDeliverymanNotAuthenticated,getDeliverymanLogin);
+router.get('/deliveryman/enddelivery',checkDeliverymanAuthenticated,getdeliverymandashboard);
 
 router.post('/deliveryman/changepassword', postChangePassword);
 router.post('/deliveryman/delivered', postDelivered);

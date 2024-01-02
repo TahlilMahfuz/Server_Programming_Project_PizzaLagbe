@@ -22,7 +22,7 @@ const googlecallback = passport.authenticate("google", {
     failureFlash: true
 });
 
-const googleredirect = (req, res) => {  
+const googleredirect = async(req,res) => {  
     pool.query(
         `select * from customers where customeremail=$1`,[req.user.email],
         (err,results)=>{
@@ -38,9 +38,11 @@ const googleredirect = (req, res) => {
                 res.render('user/dashboard',{no_err});
             }
             else{
+                let customerphone='01782633834'
                 pool.query(
-                    `insert into customers(firstname,lastname,customeremail) values($1,$2,$3) returning *`,
-                    [req.user.given_name,req.user.family_name,req.user.email],
+                    `insert into customers(firstname,lastname,customeremail,customerphone) 
+                    values($1,$2,$3,$4) returning *`,
+                    [req.user.given_name,req.user.family_name,req.user.email,customerphone],
                     (err,results)=>{
                         if(err){
                             throw err;
@@ -61,13 +63,13 @@ const googleredirect = (req, res) => {
     );
 };
 
-const googlefailure = (req, res) => {
+const googlefailure = async(req,res) => {
     let error=[];   
     error.push({message:"Google authorization failed"});
     res.render('user/userlogin',{error});
 };
 
-const getDashboard = (req, res) => {
+const getDashboard = async(req,res) => {
     if(req.session.admin){
         pool.query(
             `select * from branches`,
@@ -113,17 +115,17 @@ const getDashboard = (req, res) => {
     }
 };
 
-const getUserDashboard = (req, res) => {
+const getUserDashboard = async(req,res) => {
     req.session.user = req.user;
     req.session.save();
     res.render('user/dashboard');
 };
 
-const getUserLogin = (req, res) => {
+const getUserLogin = async(req,res) => {
     res.render('user/userlogin');
 };
 
-const getUserSignup = (req, res) => {
+const getUserSignup = async(req,res) => {
     pool.query(
         `select * from branches`,
         (err, results) => {
@@ -136,7 +138,7 @@ const getUserSignup = (req, res) => {
     );
 };
 
-const logout = (req, res) => {
+const logout = async(req,res) => {
     req.logout(req.user, err => {
         if (err) return next(err);
         req.session.destroy();
@@ -144,7 +146,7 @@ const logout = (req, res) => {
     });
 };
 
-const getOrderPizza = (req, res) => {
+const getOrderPizza = async(req,res) => {
     pool.query(
         `select * from pizzas`,
         (err,results)=>{
@@ -190,7 +192,7 @@ const getOrderPizza = (req, res) => {
     );
 };
 
-const getCart = (req, res) => {
+const getCart = async(req,res) => {
     let userid = req.session.user.customerid;
     console.log(userid);
     pool.query(
@@ -222,7 +224,7 @@ const getCart = (req, res) => {
     );
 };
 
-const makeReview = (req, res) => {
+const makeReview = async(req,res) => {
     let {orderid,rating,comment}=req.body;
     console.log('The rating, comment and orderid is'+rating+" "+comment+" "+orderid);
     pool.query(
@@ -267,12 +269,12 @@ const makeReview = (req, res) => {
     );
 };
 
-const showReviewForm = (req, res) => {
+const showReviewForm = async(req,res) => {
     let { orderid } = req.body;
     res.render('user/review', { orderid });
 };
 
-const placeOrder = (req, res) => {
+const placeOrder = async(req,res) => {
     let userid = req.session.user.customerid;
     let { pizzas, toppings, ordertype, branch, address, quantity } = req.body;
     console.log(pizzas, toppings, branch, ordertype, address,userid, quantity);
@@ -295,7 +297,7 @@ const placeOrder = (req, res) => {
     );
 };
 
-const validateUserSignup = async (req, res) => {
+const validateUserSignup = async(req,res) => {
     let {firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch} = req.body;
 
     console.log(firstname,lastname,useremail,userphone,userpassword,cuserpassword,branch);
@@ -333,7 +335,7 @@ const validateUserSignup = async (req, res) => {
     }
 };
 
-const registerUser = async(req, res) => {
+const registerUser = async(req,res) => {
     let {firstname,lastname,useremail,userphone,userpassword,userotp,uservarcode} = req.body;
     let error=[];
     if(userotp!=uservarcode){
@@ -365,7 +367,7 @@ const registerUser = async(req, res) => {
     }
 };
 
-const updatePhoneNumber = async(req, res) => {
+const updatePhoneNumber = async(req,res) => {
     let {userphone} = req.params;
     let userid = req.session.user.customerid;
     pool.query(
@@ -386,7 +388,7 @@ const updatePhoneNumber = async(req, res) => {
     );
 }
 
-const updateFirstName = async(req, res) => {
+const updateFirstName = async(req,res) => {
     let {firstname} = req.params;
     let userid = req.session.user.customerid;
     pool.query(
@@ -407,7 +409,7 @@ const updateFirstName = async(req, res) => {
     );
 }
 
-const updateLastName = async(req, res) => {
+const updateLastName = async(req,res) => {
     let {lastname} = req.params;
     let userid = req.session.user.customerid;
     pool.query(
@@ -428,7 +430,7 @@ const updateLastName = async(req, res) => {
     );
 }
 
-const deleteComment = async(req, res) => {
+const deleteComment = async(req,res) => {
     let {orderid} = req.params;
     //check if order exists
     pool.query(
@@ -537,7 +539,7 @@ const setnewpassword=async(req,res)=>{
     );
 }
 
-const uploadImage = async (req, res) => {
+const uploadImage = async(req,res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file provided" });
@@ -566,7 +568,8 @@ const uploadImage = async (req, res) => {
   };
 
 
-const  uploadVoiceReview = async (req, res) => {
+const  uploadVoiceReview = async(req,res) => {
+    let {orderid} = req.params;
     try {
       if (!req.file) {
         return res.status(400).json({ message: "No file provided" });
@@ -574,7 +577,7 @@ const  uploadVoiceReview = async (req, res) => {
       const audio = req.file.filename;
       if(audio){
         pool.query(
-            `insert into audios (orderid, audioname) values ($1,$2)`,[req.user.customerid, audio],
+            `insert into audios (orderid, audioname) values ($1,$2)`,[orderid, audio],
             (err,results)=>{
                 if(err){
                     throw err;
@@ -646,6 +649,74 @@ const deleteaudio = async(req,res)=>{
     );
 }
 
+const uploadMultipleImages =async(req,res) => {
+    try {
+      if (!req.files) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+      const photos = req.files.map(file => file.filename);
+      if(photos){
+        //traverse photos array and insert into database
+        photos.forEach(photo => {
+            pool.query(
+                `insert into photos (customerid, photoname) values ($1,$2)`,[req.user.customerid, photo],
+                (err,results)=>{
+                    if(err){
+                        throw err;
+                    }
+                    else{
+                        console.log("Image uploaded successfully");
+                    }
+                });
+        });
+        
+        console.log("Images uploaded successfully");
+        res.json({ message: "Profile images uploaded successfully" });
+      }
+      else{
+        res.status(400).json({message: "Image not found"});
+      }
+    } 
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+const uploadMultipleAudios = async(req,res) => {
+    let {orderid} = req.params;
+    try {
+      if (!req.files) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+      const audios = req.files.map(file => file.filename);
+      console.log(audios);
+      if(audios){
+        //traverse audios array and insert into database
+        audios.forEach(audio => {
+            pool.query(
+                `insert into audios (orderid, audioname) values ($1,$2)`,[orderid, audio],
+                (err,results)=>{
+                    if(err){
+                        throw err;
+                    }
+                    else{
+                        console.log("Audio uploaded successfully");
+                    }
+                });
+        });
+        
+        console.log("Audios uploaded successfully");
+        res.json({ message: "Audios uploaded successfully" });
+      }
+      else{
+        res.status(400).json({message: "Audio not found"});
+      }
+    } 
+    catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
 module.exports = {
     getDashboard,
     getUserDashboard,
@@ -674,5 +745,7 @@ module.exports = {
     uploadImage,
     uploadVoiceReview,
     deletephoto,
-    deleteaudio
+    deleteaudio,
+    uploadMultipleImages,
+    uploadMultipleAudios
 };
