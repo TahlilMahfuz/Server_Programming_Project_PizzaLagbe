@@ -10,6 +10,7 @@ const fs=require('fs');
 require("./config/oAuthConfig");
 const initializePassport=require('./config/passportConfig');
 const initializeAdminPassport=require('./config/adminPassportConfig');
+const initializeDeliverymanPassport=require('./config/deliverymanPassportConfig');
 const sendMail = require("./middlewares/sendmail");
 const cookieParser = require("cookie-parser");
 
@@ -25,6 +26,7 @@ sequelize.authenticate().then(() => {
 
 initializePassport(passport);
 initializeAdminPassport(passport);
+initializeDeliverymanPassport(passport);
 
 require('dotenv').config()
 
