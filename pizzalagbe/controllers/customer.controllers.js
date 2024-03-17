@@ -567,7 +567,6 @@ const uploadImage = async(req,res) => {
     }
   };
 
-
 const  uploadVoiceReview = async(req,res) => {
     let {orderid} = req.params;
     try {
@@ -649,73 +648,84 @@ const deleteaudio = async(req,res)=>{
     );
 }
 
-const uploadMultipleImages =async(req,res) => {
+const uploadMultipleImages = async (req, res) => {
     try {
       if (!req.files) {
         return res.status(400).json({ message: "No file provided" });
       }
       const photos = req.files.map(file => file.filename);
-      if(photos){
-        //traverse photos array and insert into database
-        photos.forEach(photo => {
-            pool.query(
-                `insert into photos (customerid, photoname) values ($1,$2)`,[req.user.customerid, photo],
-                (err,results)=>{
-                    if(err){
-                        throw err;
-                    }
-                    else{
-                        console.log("Image uploaded successfully");
-                    }
-                });
-        });
-        
+      if (photos.length > 0) {
+        // Use Promise.all to handle multiple asynchronous operations concurrently
+        await Promise.all(
+          photos.map(async (photo) => {
+            // Wrap the pool.query in a promise
+            return new Promise((resolve, reject) => {
+              pool.query(
+                `INSERT INTO photos (customerid, photoname) VALUES ($1, $2)`,
+                [req.user.customerid, photo],
+                (err, results) => {
+                  if (err) {
+                    reject(err);
+                  } else {
+                    console.log("Image uploaded successfully");
+                    resolve();
+                  }
+                }
+              );
+            });
+          })
+        );
+  
         console.log("Images uploaded successfully");
         res.json({ message: "Profile images uploaded successfully" });
+      } else {
+        res.status(400).json({ message: "Image not found" });
       }
-      else{
-        res.status(400).json({message: "Image not found"});
-      }
-    } 
-    catch (error) {
+    } catch (error) {
       res.status(500).json({ error: error.message });
     }
   };
-
-const uploadMultipleAudios = async(req,res) => {
-    let {orderid} = req.params;
+  
+const uploadMultipleAudios = async (req, res) => {
+    let { orderid } = req.params;
     try {
-      if (!req.files) {
+        if (!req.files) {
         return res.status(400).json({ message: "No file provided" });
-      }
-      const audios = req.files.map(file => file.filename);
-      console.log(audios);
-      if(audios){
-        //traverse audios array and insert into database
-        audios.forEach(audio => {
-            pool.query(
-                `insert into audios (orderid, audioname) values ($1,$2)`,[orderid, audio],
-                (err,results)=>{
-                    if(err){
-                        throw err;
+        }
+        const audios = req.files.map(file => file.filename);
+        console.log(audios);
+        if (audios.length > 0) {
+        // Use Promise.all to handle multiple asynchronous operations concurrently
+        await Promise.all(
+            audios.map(async (audio) => {
+            // Wrap the pool.query in a promise
+            return new Promise((resolve, reject) => {
+                pool.query(
+                `INSERT INTO audios (orderid, audioname) VALUES ($1, $2)`,
+                [orderid, audio],
+                (err, results) => {
+                    if (err) {
+                    reject(err);
+                    } else {
+                    console.log("Audio uploaded successfully");
+                    resolve();
                     }
-                    else{
-                        console.log("Audio uploaded successfully");
-                    }
-                });
-        });
-        
+                }
+                );
+            });
+            })
+        );
+
         console.log("Audios uploaded successfully");
         res.json({ message: "Audios uploaded successfully" });
-      }
-      else{
-        res.status(400).json({message: "Audio not found"});
-      }
-    } 
-    catch (error) {
-      res.status(500).json({ error: error.message });
+        } else {
+        res.status(400).json({ message: "Audio not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-  }
+};
+
 
 module.exports = {
     getDashboard,
